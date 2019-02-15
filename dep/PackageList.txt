@@ -30,7 +30,7 @@ G3D (a commercial-grade C++ 3D engine available as Open Source (BSD License)
 
 jemalloc (a general-purpose scalable concurrent malloc-implementation)
   http://www.canonware.com/jemalloc/
-  Version: 5.0.1
+  Version: 5.1.0
 
 libMPQ (a library for reading MPQ files)
   https://github.com/mbroemme/libmpq/
@@ -62,4 +62,4 @@ gSOAP (a portable development toolkit for C and C++ XML Web services and XML dat
 
 recastnavigation (Recast is state of the art navigation mesh construction toolset for games)
   https://github.com/recastnavigation/recastnavigation
-  Version: 2c85309280dbc9c82029e7ab16dfb01b9235c74e
+  Version: 14b2631527c4792e95b2c78ebfa8ac4cd3413363

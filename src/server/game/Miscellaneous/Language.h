@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -213,7 +213,7 @@ enum TrinityStrings
     LANG_INVALID_GAMEOBJECT_TYPE          = 176,
     LANG_GAMEOBJECT_DAMAGED               = 177,
     LANG_GRID_POSITION                    = 178,
-    // 179-185 used in 6.x branch
+    // 179-185 used in master branch
     LANG_TRANSPORT_POSITION               = 186,
     LANG_PARTIAL_GROUP_SUMMON             = 187,
     // Room for more level 1                188-199 not used
@@ -340,7 +340,7 @@ enum TrinityStrings
     LANG_COMMAND_MODIFY_ARENA             = 306,
     LANG_COMMAND_FACTION_NOTFOUND         = 307,
     LANG_COMMAND_FACTION_UNKNOWN          = 308,
-    LANG_COMMAND_FACTION_INVPARAM         = 309,
+    LANG_COMMAND_INVALID_PARAM            = 309,
     LANG_COMMAND_FACTION_DELTA            = 310,
     LANG_FACTION_LIST                     = 311,
     LANG_FACTION_VISIBLE                  = 312,
@@ -718,30 +718,6 @@ enum TrinityStrings
 
     LANG_CHANNEL_CITY                     = 819,
 
-    LANG_NPCINFO_GOSSIP                   = 820,
-    LANG_NPCINFO_QUESTGIVER               = 821,
-    LANG_NPCINFO_TRAINER_CLASS            = 822,
-    LANG_NPCINFO_TRAINER_PROFESSION       = 823,
-    LANG_NPCINFO_VENDOR_AMMO              = 824,
-    LANG_NPCINFO_VENDOR_FOOD              = 825,
-    LANG_NPCINFO_VENDOR_POISON            = 826,
-    LANG_NPCINFO_VENDOR_REAGENT           = 827,
-    LANG_NPCINFO_REPAIR                   = 828,
-    LANG_NPCINFO_FLIGHTMASTER             = 829,
-    LANG_NPCINFO_SPIRITHEALER             = 830,
-    LANG_NPCINFO_SPIRITGUIDE              = 831,
-    LANG_NPCINFO_INNKEEPER                = 832,
-    LANG_NPCINFO_BANKER                   = 833,
-    LANG_NPCINFO_PETITIONER               = 834,
-    LANG_NPCINFO_TABARDDESIGNER           = 835,
-    LANG_NPCINFO_BATTLEMASTER             = 836,
-    LANG_NPCINFO_AUCTIONEER               = 837,
-    LANG_NPCINFO_STABLEMASTER             = 838,
-    LANG_NPCINFO_GUILD_BANKER             = 839,
-    LANG_NPCINFO_SPELLCLICK               = 840,
-    LANG_NPCINFO_MAILBOX                  = 841,
-    LANG_NPCINFO_PLAYER_VEHICLE           = 842,
-
     // Pinfo commands
     LANG_PINFO_PLAYER                     = 453,
     LANG_PINFO_GM_ACTIVE                  = 548,
@@ -765,6 +741,7 @@ enum TrinityStrings
     LANG_PINFO_CHR_PLAYEDTIME             = 853,
     LANG_PINFO_CHR_MAILS                  = 854,
     LANG_PINFO_CHR_LEVEL_HIGH             = 871,
+    LANG_PINFO_CHR_MAP_WITH_AREA          = 882,
 
     LANG_CHARACTER_GENDER_MALE            = 855,
     LANG_CHARACTER_GENDER_FEMALE          = 856,
@@ -794,7 +771,8 @@ enum TrinityStrings
     //                                    = 879, see LANG_PINFO_CHR_REGMAILS
     LANG_ACCOUNT_SEC_TYPE                 = 880,
     LANG_RBAC_EMAIL_REQUIRED              = 881,
-    // Room for in-game strings             882-999 not used
+    //                                    = 882, LANG_PINFO_CHR_MAP_WITH_AREA
+    // Room for in-game strings             883-999 not used
 
     // Level 4 (CLI only commands)
     LANG_COMMAND_EXIT                     = 1000,
@@ -925,7 +903,16 @@ enum TrinityStrings
     LANG_GROUP_ROLE_CHANGED               = 1186,
     LANG_LEADER_CANNOT_BE_ASSISTANT       = 1187,
     LANG_BAN_EXISTS                       = 1188,
-    // Room for more level 3                1189-1199 not used
+    LANG_COMMAND_NO_INSTANCES_MATCH       = 1189,
+    LANG_COMMAND_MULTIPLE_INSTANCES_MATCH = 1190,
+    LANG_COMMAND_MULTIPLE_INSTANCES_ENTRY = 1191,
+    LANG_COMMAND_MAP_NOT_INSTANCE         = 1192,
+    LANG_COMMAND_INSTANCE_NO_ENTRANCE     = 1193,
+    LANG_COMMAND_INSTANCE_NO_EXIT         = 1194,
+    LANG_COMMAND_WENT_TO_INSTANCE_GATE    = 1195,
+    LANG_COMMAND_WENT_TO_INSTANCE_START   = 1196,
+    LANG_COMMAND_GO_INSTANCE_FAILED       = 1197,
+    // Room for more level 3                1197-1199 not used
 
     // Debug commands
     LANG_CINEMATIC_NOT_EXIST              = 1200,
@@ -989,7 +976,7 @@ enum TrinityStrings
     LANG_BATTLEGROUND                     = 5015,
     LANG_ARENA                            = 5016,
     LANG_RAID                             = 5017,
-    //                                    = 5018, unused
+    LANG_NPCINFO_REACTSTATE               = 5018,
     LANG_COMMAND_TEMP_FROZEN_PLAYER       = 5019,
     LANG_NPCINFO_PHASEMASK                = 5020,
     LANG_NPCINFO_ARMOR                    = 5021,
@@ -1053,7 +1040,7 @@ enum TrinityStrings
     LANG_SPAWNINFO_COMPATIBILITY_MODE     = 5071,
     LANG_SPAWNINFO_GUIDINFO               = 5072,
     LANG_SPAWNINFO_SPAWNID_LOCATION       = 5073,
-    LANG_SPAWNINFO_DISTANCEFROMPLAYER     = 5074,
+    LANG_SPAWNINFO_ROTATION               = 5074,
     LANG_SPAWNGROUP_BADGROUP              = 5075,
     LANG_SPAWNGROUP_SPAWNCOUNT            = 5076,
     LANG_LIST_RESPAWNS_RANGE              = 5077,
@@ -1062,6 +1049,7 @@ enum TrinityStrings
     LANG_LIST_RESPAWNS_OVERDUE            = 5080,
     LANG_LIST_RESPAWNS_CREATURES          = 5081,
     LANG_LIST_RESPAWNS_GAMEOBJECTS        = 5082,
+    LANG_OBJECTINFO_AITYPE                = 5083,
 
     // Room for more Trinity strings        5084-6603
 
@@ -1137,7 +1125,7 @@ enum TrinityStrings
     LANG_BAN_ACCOUNT_YOUBANNEDMESSAGE_WORLD       = 11006,
     LANG_BAN_ACCOUNT_YOUPERMBANNEDMESSAGE_WORLD   = 11007,
 
-    LANG_NPCINFO_INHABIT_TYPE                     = 11008,
+    LANG_NPCINFO_MOVEMENT_DATA                    = 11008,
     LANG_NPCINFO_FLAGS_EXTRA                      = 11009,
     LANG_INSTANCE_LOGIN_GAMEMASTER_EXCEPTION      = 11010,
 

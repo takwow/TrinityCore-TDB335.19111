@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,7 +23,6 @@ SDCategory: howling_fjord
 EndScriptData */
 
 /* ContentData
-npc_plaguehound_tracker
 npc_apothecary_hanes
 EndContentData */
 
@@ -89,8 +88,8 @@ public:
 
         void StartEscort(Player* player)
         {
-            events.ScheduleEvent(EVENT_BEGIN, Seconds(2));
-            events.ScheduleEvent(EVENT_START_ESCORT, Seconds(6));
+            events.ScheduleEvent(EVENT_BEGIN, 2s);
+            events.ScheduleEvent(EVENT_START_ESCORT, 6s);
             _player = player->GetGUID();
         }
 
@@ -98,7 +97,7 @@ public:
         {
             PotTimer = 10000; //10 sec cooldown on potion
             events.Reset();
-            events.ScheduleEvent(EVENT_EMOTE_BEG, Seconds(2));
+            events.ScheduleEvent(EVENT_EMOTE_BEG, 2s);
             me->SetStandState(UNIT_STAND_STATE_KNEEL);
             _player = ObjectGuid();
         }
@@ -146,7 +145,7 @@ public:
                 {
                     case EVENT_EMOTE_BEG:
                         me->HandleEmoteCommand(EMOTE_ONESHOT_BEG);
-                        events.ScheduleEvent(EVENT_EMOTE_BEG, Seconds(25));
+                        events.ScheduleEvent(EVENT_EMOTE_BEG, 25s);
                         break;
                     case EVENT_BEGIN:
                         if (Player* player = ObjectAccessor::GetPlayer(*me, _player))
@@ -212,12 +211,12 @@ public:
             {
                 case 1:
                     events.ScheduleEvent(EVENT_TALK_1, Seconds(3));
-                    events.ScheduleEvent(EVENT_KNEEL, Seconds(5));
+                    events.ScheduleEvent(EVENT_KNEEL, 5s);
                     events.ScheduleEvent(EVENT_TALK_2, Seconds(6));
                     me->SetStandState(UNIT_STAND_STATE_STAND);
                     break;
                 case 12:
-                    events.ScheduleEvent(EVENT_BURN_CRATES, Seconds(1));
+                    events.ScheduleEvent(EVENT_BURN_CRATES, 1s);
                     events.ScheduleEvent(EVENT_TALK_3, Seconds(3));
                     break;
                 case 20:
@@ -229,7 +228,7 @@ public:
                     break;
                 case 28:
                     events.ScheduleEvent(EVENT_BURN_CRATES, 0);
-                    events.ScheduleEvent(EVENT_LAUGH, Seconds(7));
+                    events.ScheduleEvent(EVENT_LAUGH, 7s);
                     events.ScheduleEvent(EVENT_TALK_5, Seconds(9));
                     events.ScheduleEvent(EVENT_TALK_6, Seconds(17));
                     break;
@@ -255,55 +254,6 @@ public:
     CreatureAI* GetAI(Creature* creature) const override
     {
         return new npc_Apothecary_HanesAI(creature);
-    }
-};
-
-/*######
-## npc_plaguehound_tracker
-######*/
-
-enum Plaguehound
-{
-    QUEST_SNIFF_OUT_ENEMY        = 11253
-};
-
-class npc_plaguehound_tracker : public CreatureScript
-{
-public:
-    npc_plaguehound_tracker() : CreatureScript("npc_plaguehound_tracker") { }
-
-    struct npc_plaguehound_trackerAI : public EscortAI
-    {
-        npc_plaguehound_trackerAI(Creature* creature) : EscortAI(creature) { }
-
-        void Reset() override
-        {
-            ObjectGuid summonerGUID;
-
-            if (me->IsSummon())
-                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                    if (summoner->GetTypeId() == TYPEID_PLAYER)
-                        summonerGUID = summoner->GetGUID();
-
-            if (!summonerGUID)
-                return;
-
-            me->SetWalk(true);
-            Start(false, false, summonerGUID);
-        }
-
-        void WaypointReached(uint32 waypointId, uint32 /*pathId*/) override
-        {
-            if (waypointId != 26)
-                return;
-
-            me->DespawnOrUnsummon();
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_plaguehound_trackerAI(creature);
     }
 };
 
@@ -514,7 +464,7 @@ public:
 
         void Reset() override
         {
-            events.ScheduleEvent(EVENT_CHECK_CHARMED, 1000);
+            events.ScheduleEvent(EVENT_CHECK_CHARMED, 1s);
         }
 
         void UpdateAI(uint32 diff) override
@@ -529,7 +479,7 @@ public:
                         if (!me->IsCharmedOwnedByPlayerOrPlayer())
                             me->DespawnOrUnsummon();
                         else
-                            events.ScheduleEvent(EVENT_CHECK_CHARMED, 1000);
+                            events.ScheduleEvent(EVENT_CHECK_CHARMED, 1s);
                         break;
                 }
             }
@@ -662,7 +612,6 @@ public:
 void AddSC_howling_fjord()
 {
     new npc_apothecary_hanes();
-    new npc_plaguehound_tracker();
     new npc_razael_and_lyana();
     new npc_daegarn();
     new npc_mindless_abomination();

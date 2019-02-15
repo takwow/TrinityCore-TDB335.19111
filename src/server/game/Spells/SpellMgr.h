@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -23,6 +23,7 @@
 
 #include "Define.h"
 #include "Duration.h"
+#include "IteratorPair.h"
 #include "SharedDefines.h"
 #include "Util.h"
 
@@ -34,8 +35,8 @@
 
 class SpellInfo;
 class Player;
-class Unit;
 class ProcEventInfo;
+class WorldObject;
 struct SkillLineAbilityEntry;
 
 // only used in code
@@ -72,6 +73,9 @@ enum SpellFamilyFlag
 
     // Warlock
     SPELLFAMILYFLAG_WARLOCK_LIFETAP         = 0x00040000,
+
+    // Hunter
+    SPELLFAMILYFLAG1_HUNTER_EXPLOSIVE_SHOT  = 0x80000000,
 
     // Druid
     SPELLFAMILYFLAG2_DRUID_STARFALL         = 0x00000100,
@@ -553,12 +557,11 @@ struct PetDefaultSpellsEntry
 // < 0 for petspelldata id, > 0 for creature_id
 typedef std::map<int32, PetDefaultSpellsEntry> PetDefaultSpellsMap;
 
-typedef std::vector<uint32> SpellCustomAttribute;
 typedef std::vector<bool> EnchantCustomAttribute;
 
 typedef std::vector<SpellInfo*> SpellInfoMap;
 
-typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
+typedef std::unordered_map<int32, std::vector<int32>> SpellLinkedMap;
 
 bool IsPrimaryProfessionSkill(uint32 skill);
 
@@ -591,8 +594,8 @@ class TC_GAME_API SpellMgr
         // Spell difficulty
         uint32 GetSpellDifficultyId(uint32 spellId) const;
         void SetSpellDifficultyId(uint32 spellId, uint32 id);
-        uint32 GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) const;
-        SpellInfo const* GetSpellForDifficultyFromSpell(SpellInfo const* spell, Unit const* caster) const;
+        uint32 GetSpellIdForDifficulty(uint32 spellId, WorldObject const* caster) const;
+        SpellInfo const* GetSpellForDifficultyFromSpell(SpellInfo const* spell, WorldObject const* caster) const;
 
         // Spell Ranks table
         SpellChainNode const* GetSpellChainNode(uint32 spell_id) const;
@@ -605,7 +608,7 @@ class TC_GAME_API SpellMgr
         uint32 GetSpellWithRank(uint32 spell_id, uint32 rank, bool strict = false) const;
 
         // Spell Required table
-        SpellRequiredMapBounds GetSpellsRequiredForSpellBounds(uint32 spell_id) const;
+        Trinity::IteratorPair<SpellRequiredMap::const_iterator> GetSpellsRequiredForSpellBounds(uint32 spell_id) const;
         SpellsRequiringSpellMapBounds GetSpellsRequiringSpellBounds(uint32 spell_id) const;
         bool IsSpellRequiringSpell(uint32 spellid, uint32 req_spellid) const;
 
@@ -648,7 +651,7 @@ class TC_GAME_API SpellMgr
         SpellEnchantProcEntry const* GetSpellEnchantProcEvent(uint32 enchId) const;
         bool IsArenaAllowedEnchancment(uint32 ench_id) const;
 
-        const std::vector<int32> *GetSpellLinked(int32 spell_id) const;
+        std::vector<int32> const* GetSpellLinked(int32 spell_id) const;
 
         PetLevelupSpellSet const* GetPetLevelupSpellList(uint32 petFamily) const;
         PetDefaultSpellsEntry const* GetPetDefaultSpellsEntry(int32 id) const;

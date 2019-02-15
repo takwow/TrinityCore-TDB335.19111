@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -319,14 +319,14 @@ void Player::UpdateMaxPower(Powers power)
 {
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + power);
 
-    float bonusPower = (power == POWER_MANA && GetCreatePowers(power) > 0) ? GetManaBonusFromIntellect() : 0;
+    float bonusPower = (power == POWER_MANA && GetCreatePowerValue(power) > 0) ? GetManaBonusFromIntellect() : 0;
 
-    float value = GetFlatModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
+    float value = GetFlatModifierValue(unitMod, BASE_VALUE) + GetCreatePowerValue(power);
     value *= GetPctModifierValue(unitMod, BASE_PCT);
     value += GetFlatModifierValue(unitMod, TOTAL_VALUE) +  bonusPower;
     value *= GetPctModifierValue(unitMod, TOTAL_PCT);
 
-    SetMaxPower(power, uint32(value));
+    SetMaxPower(power, uint32(std::lroundf(value)));
 }
 
 void Player::ApplyFeralAPBonus(int32 amount, bool apply)
@@ -517,6 +517,20 @@ void Player::UpdateShieldBlockValue()
 
 void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex) const
 {
+    // Only proto damage, not affected by any mods
+    if (damageIndex != 0)
+    {
+        minDamage = 0.0f;
+        maxDamage = 0.0f;
+
+        if (!IsInFeralForm() && CanUseAttackType(attType))
+        {
+            minDamage = GetWeaponDamageRange(attType, MINDAMAGE, damageIndex);
+            maxDamage = GetWeaponDamageRange(attType, MAXDAMAGE, damageIndex);
+        }
+        return;
+    }
+
     UnitMods unitMod;
 
     switch (attType)
@@ -536,26 +550,18 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     float const attackPowerMod = std::max(GetAPMultiplier(attType, normalized), 0.25f);
 
     float baseValue  = GetFlatModifierValue(unitMod, BASE_VALUE);
-    if (damageIndex == 0) // apply AP bonus only to primary weapon damage
-        baseValue += GetTotalAttackPowerValue(attType) / 14.0f * attackPowerMod;
+    baseValue += GetTotalAttackPowerValue(attType) / 14.0f * attackPowerMod;
 
     float basePct    = GetPctModifierValue(unitMod, BASE_PCT);
     float totalValue = GetFlatModifierValue(unitMod, TOTAL_VALUE);
     float totalPct   = addTotalPct ? GetPctModifierValue(unitMod, TOTAL_PCT) : 1.0f;
 
-    float weaponMinDamage = GetWeaponDamageRange(attType, MINDAMAGE, damageIndex);
-    float weaponMaxDamage = GetWeaponDamageRange(attType, MAXDAMAGE, damageIndex);
+    float weaponMinDamage = GetWeaponDamageRange(attType, MINDAMAGE);
+    float weaponMaxDamage = GetWeaponDamageRange(attType, MAXDAMAGE);
 
-    // check if player is druid and in cat or bear forms (only primary damage)
+    // check if player is druid and in cat or bear forms
     if (IsInFeralForm())
     {
-        if (damageIndex != 0)
-        {
-            minDamage = 0.f;
-            maxDamage = 0.f;
-            return;
-        }
-
         uint8 lvl = getLevel();
         if (lvl > 60)
             lvl = 60;
@@ -566,8 +572,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     else if (!CanUseAttackType(attType)) // check if player not in form but still can't use (disarm case)
     {
         // cannot use ranged/off attack, set values to 0
-        // set secondary damages to 0 by default
-        if (damageIndex != 0 || attType != BASE_ATTACK)
+        if (attType != BASE_ATTACK)
         {
             minDamage = 0.f;
             maxDamage = 0.f;
@@ -577,7 +582,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
         weaponMinDamage = BASE_MINDAMAGE;
         weaponMaxDamage = BASE_MAXDAMAGE;
     }
-    else if (damageIndex == 0 && attType == RANGED_ATTACK) // add ammo DPS to ranged primary damage
+    else if (attType == RANGED_ATTACK) // add ammo DPS to ranged primary damage
     {
         weaponMinDamage += GetAmmoDPS() * attackPowerMod;
         weaponMaxDamage += GetAmmoDPS() * attackPowerMod;
@@ -845,14 +850,12 @@ void Player::UpdateArmorPenetration(int32 amount)
 
 void Player::UpdateMeleeHitChances()
 {
-    m_modMeleeHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
-    m_modMeleeHitChance += GetRatingBonusValue(CR_HIT_MELEE);
+    m_modMeleeHitChance = GetRatingBonusValue(CR_HIT_MELEE);
 }
 
 void Player::UpdateRangedHitChances()
 {
-    m_modRangedHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
-    m_modRangedHitChance += GetRatingBonusValue(CR_HIT_RANGED);
+    m_modRangedHitChance = GetRatingBonusValue(CR_HIT_RANGED);
 }
 
 void Player::UpdateSpellHitChances()
@@ -1029,8 +1032,12 @@ void Creature::UpdateMaxPower(Powers power)
 {
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + power);
 
-    float value  = GetTotalAuraModValue(unitMod);
-    SetMaxPower(power, uint32(value));
+    float value = GetFlatModifierValue(unitMod, BASE_VALUE) + GetCreatePowerValue(power);
+    value *= GetPctModifierValue(unitMod, BASE_PCT);
+    value += GetFlatModifierValue(unitMod, TOTAL_VALUE);
+    value *= GetPctModifierValue(unitMod, TOTAL_PCT);
+
+    SetMaxPower(power, uint32(std::lroundf(value)));
 }
 
 void Creature::UpdateAttackPowerAndDamage(bool ranged)
@@ -1237,6 +1244,8 @@ bool Guardian::UpdateStats(Stats stat)
 
 bool Guardian::UpdateAllStats()
 {
+    UpdateMaxHealth();
+
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         UpdateStats(Stats(i));
 
@@ -1325,7 +1334,7 @@ void Guardian::UpdateMaxPower(Powers power)
         default:                multiplicator = 15.0f;  break;
     }
 
-    float value  = GetFlatModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
+    float value  = GetFlatModifierValue(unitMod, BASE_VALUE) + GetCreatePowerValue(power);
     value *= GetPctModifierValue(unitMod, BASE_PCT);
     value += GetFlatModifierValue(unitMod, TOTAL_VALUE) + addValue * multiplicator;
     value *= GetPctModifierValue(unitMod, TOTAL_PCT);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -691,7 +691,7 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                 }
                 else if (effIndex == EFFECT_1)
                 {
-                    args.AddSpellBP0(GetSpell()->CalculateDamage(EFFECT_0, nullptr));
+                    args.AddSpellBP0(GetSpell()->CalculateDamage(EFFECT_0));
                     GetCaster()->CastSpell(target, GetEffectValue(), args);
                 }
             }
@@ -1136,7 +1136,7 @@ class spell_dk_death_strike : public SpellScriptLoader
                     int32 bp = int32(count * caster->CountPctFromMaxHealth(int32(GetSpellInfo()->Effects[EFFECT_0].DamageMultiplier)));
                     // Improved Death Strike
                     if (AuraEffect const* aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, DK_ICON_ID_IMPROVED_DEATH_STRIKE, 0))
-                        AddPct(bp, caster->CalculateSpellDamage(caster, aurEff->GetSpellInfo(), 2));
+                        AddPct(bp, caster->CalculateSpellDamage(aurEff->GetSpellInfo(), EFFECT_2));
 
                     // @todo castspell refactor note: this is not triggered - is this intended??
                     CastSpellExtraArgs args;
@@ -1277,7 +1277,7 @@ class spell_dk_hysteria : public AuraScript
 
     void PeriodicTick(AuraEffect const* aurEff)
     {
-        uint32 const damage = GetTarget()->CountPctFromMaxHealth(GetTarget()->CalculateSpellDamage(nullptr, GetSpellInfo(), aurEff->GetEffIndex()));
+        uint32 const damage = GetTarget()->CountPctFromMaxHealth(GetTarget()->CalculateSpellDamage(GetSpellInfo(), aurEff->GetEffIndex()));
         Unit::DealDamage(GetTarget(), GetTarget(), damage, nullptr, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
     }
 
@@ -2463,9 +2463,6 @@ class spell_dk_unholy_blight : public SpellScriptLoader
                 ASSERT(spellInfo->GetMaxTicks() > 0);
                 amount /= spellInfo->GetMaxTicks();
 
-                // Add remaining ticks to healing done
-                amount += target->GetRemainingPeriodicAmount(caster->GetGUID(), SPELL_DK_UNHOLY_BLIGHT_DAMAGE, SPELL_AURA_PERIODIC_DAMAGE);
-
                 CastSpellExtraArgs args(aurEff);
                 args.AddSpellBP0(amount);
                 caster->CastSpell(target, SPELL_DK_UNHOLY_BLIGHT_DAMAGE, args);
@@ -2917,20 +2914,14 @@ public:
             if (ghoulGuid.IsEmpty())
                 return;
 
-            oldAI = player->AI();
-            oldAIState = player->IsAIEnabled;
-            player->SetAI(new player_ghoulAI(player, ghoulGuid));
-            player->IsAIEnabled = true;
+            player->PushAI(new player_ghoulAI(player, ghoulGuid));
         }
 
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Player* player = GetTarget()->ToPlayer();
 
-            player->IsAIEnabled = oldAIState;
-            PlayerAI* thisAI = player->AI();
-            player->SetAI(oldAI);
-            delete thisAI;
+            player->PopAI();
 
             // Dismiss ghoul if necessary
             if (Creature* ghoul = ObjectAccessor::GetCreature(*player, ghoulGuid))
@@ -2949,8 +2940,6 @@ public:
         }
 
         ObjectGuid ghoulGuid;
-        PlayerAI* oldAI = nullptr;
-        bool oldAIState = false;
     };
 
     AuraScript* GetAuraScript() const override

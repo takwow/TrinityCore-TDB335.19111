@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -508,7 +508,7 @@ class spell_mistress_kiss_area : public SpellScript
         // get a list of players with mana
         targets.remove_if([](WorldObject* target)
         {
-            return target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->getPowerType() == POWER_MANA;
+            return target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->GetPowerType() == POWER_MANA;
         });
 
         if (targets.empty())

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -107,6 +107,7 @@ public:
             { "raidreset",     rbac::RBAC_PERM_COMMAND_INSTANCE_UNBIND,     false, &HandleDebugRaidResetCommand,        "" },
             { "neargraveyard", rbac::RBAC_PERM_COMMAND_NEARGRAVEYARD,       false, &HandleDebugNearGraveyard,           "" },
             { "instancespawn", rbac::RBAC_PERM_COMMAND_DEBUG_INSTANCESPAWN, false, &HandleDebugInstanceSpawns,          "" },
+            { "dummy",         rbac::RBAC_PERM_COMMAND_DEBUG_DUMMY,         false, &HandleDebugDummyCommand,            "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -885,6 +886,7 @@ public:
                     handler->PSendSysMessage("%s (GUID %u, SpawnID %u) is not engaged, but still has a threat list? Well, here it is:", target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetTypeId() == TYPEID_UNIT ? target->ToCreature()->GetSpawnId() : 0);
 
                 count = 0;
+                Unit* fixateVictim = mgr.GetFixateTarget();
                 for (ThreatReference const* ref : mgr.GetSortedThreatList())
                 {
                     Unit* unit = ref->GetVictim();
@@ -901,17 +903,20 @@ public:
                             onlineStr = "";
                     }
                     char const* tauntStr;
-                    switch (ref->GetTauntState())
-                    {
-                        case ThreatReference::TAUNT_STATE_TAUNT:
-                            tauntStr = " [TAUNT]";
-                            break;
-                        case ThreatReference::TAUNT_STATE_DETAUNT:
-                            tauntStr = " [DETAUNT]";
-                            break;
-                        default:
-                            tauntStr = "";
-                    }
+                    if (unit == fixateVictim)
+                        tauntStr = " [FIXATE]";
+                    else
+                        switch (ref->GetTauntState())
+                        {
+                            case ThreatReference::TAUNT_STATE_TAUNT:
+                                tauntStr = " [TAUNT]";
+                                break;
+                            case ThreatReference::TAUNT_STATE_DETAUNT:
+                                tauntStr = " [DETAUNT]";
+                                break;
+                            default:
+                                tauntStr = "";
+                        }
                     handler->PSendSysMessage("   %u.   %s   (GUID %u)  - threat %f%s%s", ++count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), ref->GetThreat(), tauntStr, onlineStr);
                 }
                 handler->SendSysMessage("End of threat list.");
@@ -1611,10 +1616,8 @@ public:
         if (!player)
             return false;
         Creature* target = handler->getSelectedCreature();
-        if (!target || !target->IsAIEnabled || !target->AI())
-        {
+        if (!target || !target->IsAIEnabled())
             return false;
-        }
 
         char* fill_str = args ? strtok((char*)args, " ") : nullptr;
         char* duration_str = args ? strtok(nullptr, " ") : nullptr;
@@ -1838,6 +1841,12 @@ public:
             else
                 handler->PSendSysMessage(" - '%s' (%u) is %sactive", groupData->name, pair.first, map->IsSpawnGroupActive(pair.first) ? "" : "not ");
         }
+        return true;
+    }
+
+    static bool HandleDebugDummyCommand(ChatHandler* handler, CommandArgs* /*args*/)
+    {
+        handler->SendSysMessage("This command does nothing right now. Edit your local core (cs_debug.cpp) to make it do whatever you need for testing.");
         return true;
     }
 };

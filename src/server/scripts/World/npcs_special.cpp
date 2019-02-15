@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -575,7 +575,7 @@ public:
                 if (GameObject* go = me->FindNearestGameObject(GO_RIBBON_POLE, 10.0f))
                     me->CastSpell(go, SPELL_RED_FIRE_RING, true);
 
-                events.ScheduleEvent(EVENT_CAST_BLUE_FIRE_RING, Seconds(5));
+                events.ScheduleEvent(EVENT_CAST_BLUE_FIRE_RING, 5s);
             }
             break;
             case EVENT_CAST_BLUE_FIRE_RING:
@@ -589,7 +589,7 @@ public:
                 if (GameObject* go = me->FindNearestGameObject(GO_RIBBON_POLE, 10.0f))
                     me->CastSpell(go, SPELL_BLUE_FIRE_RING, true);
 
-                events.ScheduleEvent(EVENT_CAST_RED_FIRE_RING, Seconds(5));
+                events.ScheduleEvent(EVENT_CAST_RED_FIRE_RING, 5s);
             }
             break;
             }
@@ -974,7 +974,7 @@ void npc_doctor::npc_doctorAI::UpdateAI(uint32 diff)
             if (Creature* Patient = me->SummonCreature(patientEntry, **point, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
             {
                 //303, this flag appear to be required for client side item->spell to work (TARGET_SINGLE_FRIEND)
-                Patient->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+                Patient->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
 
                 Patients.push_back(Patient->GetGUID());
                 ENSURE_AI(npc_injured_patient::npc_injured_patientAI, Patient->AI())->DoctorGUID = me->GetGUID();
@@ -2447,7 +2447,7 @@ public:
             if (summoner->GetTypeId() == TYPEID_PLAYER)
             {
                 summonerGUID = summoner->GetGUID();
-                events.ScheduleEvent(EVENT_TALK, 3000);
+                events.ScheduleEvent(EVENT_TALK, 3s);
             }
         }
 
@@ -2586,7 +2586,7 @@ class npc_train_wrecker : public CreatureScript
                             _isSearching = false;
                             _target = target->GetGUID();
                             me->SetWalk(true);
-                            me->GetMotionMaster()->MovePoint(MOVEID_CHASE, target->GetNearPosition(3.0f, target->GetAngle(me)));
+                            me->GetMotionMaster()->MovePoint(MOVEID_CHASE, target->GetNearPosition(3.0f, target->GetAbsoluteAngle(me)));
                         }
                         else
                             _timer = 3 * IN_MILLISECONDS;
@@ -2925,7 +2925,7 @@ public:
             init.DisableTransportPathTransformations();
             init.MoveTo(x, y, z, false);
             init.SetFacing(o);
-            init.Launch();
+            who->GetMotionMaster()->LaunchMoveSpline(std::move(init), EVENT_VEHICLE_BOARD, MOTION_PRIORITY_HIGHEST);
             who->m_Events.AddEvent(new CastFoodSpell(who, _chairSpells.at(who->GetEntry())), who->m_Events.CalculateTime(1000));
             if (who->GetTypeId() == TYPEID_UNIT)
                 who->SetDisplayId(who->ToCreature()->GetCreatureTemplate()->Modelid1);

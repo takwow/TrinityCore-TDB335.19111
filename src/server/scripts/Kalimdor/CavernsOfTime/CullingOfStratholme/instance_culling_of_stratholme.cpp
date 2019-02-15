@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -313,7 +313,7 @@ class instance_culling_of_stratholme : public InstanceMapScript
                                 default:
                                     break;
                             }
-                            events.ScheduleEvent(EVENT_INFINITE_TIMER, 60000);
+                            events.ScheduleEvent(EVENT_INFINITE_TIMER, 1min);
                             --_eventTimer;
                             break;
                         default:

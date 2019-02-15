@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2019 TrinityCore <https://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -31,6 +31,7 @@
 #include "DatabaseEnv.h"
 #include "DatabaseLoader.h"
 #include "IoContext.h"
+#include "IPLocation.h"
 #include "GitRevision.h"
 #include "MySQLThreading.h"
 #include "ProcessPriority.h"
@@ -136,6 +137,9 @@ int main(int argc, char** argv)
     // Initialize the database connection
     if (!StartDB())
         return 1;
+
+    // Load IP Location Database
+    sIPLocation->Load();
 
     std::shared_ptr<void> dbHandle(nullptr, [](void*) { StopDB(); });
 
