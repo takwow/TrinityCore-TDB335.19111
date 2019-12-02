@@ -18,9 +18,15 @@ if(WIN32)
       if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
         set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.0)
       else()
-        list(APPEND BOOST_LIBRARYDIR
-          ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.1
-          ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.0 )
+		if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.20)
+			list(APPEND BOOST_LIBRARYDIR
+			  ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.1
+			  ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.0 )
+		else()
+			list(APPEND BOOST_LIBRARYDIR
+			  ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.2
+			  ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.1 )
+		endif()
       endif()
     endif()
   else()
@@ -76,6 +82,7 @@ target_compile_definitions(boost
     # May be removed when the requirement is raised to boost 1.61 on windows.
     -DBOOST_OPTIONAL_USE_OLD_DEFINITION_OF_NONE
     -DBOOST_CHRONO_NO_LIB
+    -DBOOST_SERIALIZATION_NO_LIB
     -DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
     -DBOOST_ASIO_NO_DEPRECATED
     -DBOOST_SYSTEM_USE_UTF8)

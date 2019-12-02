@@ -36,7 +36,7 @@ struct SummonPropertiesEntry;
 class TC_GAME_API TempSummon : public Creature
 {
     public:
-        explicit TempSummon(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
+        explicit TempSummon(SummonPropertiesEntry const* properties, WorldObject* owner, bool isWorldObject);
         virtual ~TempSummon() { }
         void Update(uint32 time) override;
         virtual void InitStats(uint32 lifetime);
@@ -46,11 +46,15 @@ class TC_GAME_API TempSummon : public Creature
         void RemoveFromWorld() override;
         void SetTempSummonType(TempSummonType type);
         void SaveToDB(uint32 /*mapid*/, uint8 /*spawnMask*/, uint32 /*phaseMask*/) override { }
-        Unit* GetSummoner() const;
+        WorldObject* GetSummoner() const;
+        Unit* GetSummonerUnit() const;
         Creature* GetSummonerCreatureBase() const;
+        GameObject* GetSummonerGameObject() const;
         ObjectGuid GetSummonerGUID() const { return m_summonerGUID; }
         TempSummonType GetSummonType() const { return m_type; }
         uint32 GetTimer() const { return m_timer; }
+        bool CanFollowOwner() const { return m_canFollowOwner; }
+        void SetCanFollowOwner(bool can) { m_canFollowOwner = can; }
 
         SummonPropertiesEntry const* const m_Properties;
 
@@ -60,6 +64,7 @@ class TC_GAME_API TempSummon : public Creature
         uint32 m_timer;
         uint32 m_lifetime;
         ObjectGuid m_summonerGUID;
+        bool m_canFollowOwner;
 };
 
 class TC_GAME_API Minion : public TempSummon
@@ -121,7 +126,6 @@ class TC_GAME_API Puppet : public Minion
         void InitStats(uint32 duration) override;
         void InitSummon() override;
         void Update(uint32 time) override;
-        void RemoveFromWorld() override;
 };
 
 class TC_GAME_API ForcedUnsummonDelayEvent : public BasicEvent
